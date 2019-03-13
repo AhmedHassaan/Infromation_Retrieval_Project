@@ -38,6 +38,7 @@ namespace Infromation_Retrieval_Project
         private void Form1_Load(object sender, EventArgs e)
         {
             stopBtn.Visible = false;
+            clearDB();
         }
         private void button1_Click(object sender, EventArgs e)
         {
@@ -114,7 +115,7 @@ namespace Infromation_Retrieval_Project
 
                     }
                     visitedLinks.Add(URL);
-                    //addInDB(count, URL, rString);
+                    addInDB(count, URL, rString);
                 }
                 catch
                 {
