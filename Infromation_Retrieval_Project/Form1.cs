@@ -11,6 +11,8 @@ using System.Net;
 using System.IO;
 using mshtml;
 using System.Threading;
+using Oracle.DataAccess.Client;
+using Oracle.DataAccess.Types;
 
 namespace Infromation_Retrieval_Project
 {
@@ -31,9 +33,12 @@ namespace Infromation_Retrieval_Project
         public Form1()
         {
             InitializeComponent();
-            stopBtn.Visible = false;
         }
 
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            stopBtn.Visible = false;
+        }
         private void button1_Click(object sender, EventArgs e)
         {
             stopBtn.Visible = true;
@@ -109,19 +114,20 @@ namespace Infromation_Retrieval_Project
 
                     }
                     visitedLinks.Add(URL);
+                    //addInDB(doc,count, URL, rString);
                 }
-                catch 
+                catch
                 {
-                    count--;
+                    //count--;
                 }
-                visitedSize.Text = visitedLinks.Count.ToString();
+                visitedSize.Text = count.ToString();
                 allSize.Text = allLinks.Count.ToString();
                 listBox2.DataSource = null;
                 listBox2.DataSource = visitedLinks;
                 listBox1.DataSource = null;
                 listBox1.DataSource = allLinks;
-                //if (count == 20)
-                //    break;
+                if (count == 3000)
+                    break;
             }
             streamResponse.Close();
             sReader.Close();
@@ -139,5 +145,15 @@ namespace Infromation_Retrieval_Project
             timer1.Stop();
             MessageBox.Show("Done");
         }
+
+        private void addInDB(IHTMLDocument2 h,int index,string url, string html)
+        {
+
+        }
+        private void clearDB()
+        {
+
+        }
+
     }
 }
