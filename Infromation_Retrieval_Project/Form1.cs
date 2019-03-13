@@ -114,7 +114,7 @@ namespace Infromation_Retrieval_Project
 
                     }
                     visitedLinks.Add(URL);
-                    //addInDB(doc,count, URL, rString);
+                    //addInDB(count, URL, rString);
                 }
                 catch
                 {
@@ -146,7 +146,7 @@ namespace Infromation_Retrieval_Project
             MessageBox.Show("Done");
         }
 
-        private void addInDB(IHTMLDocument2 h,int index,string url, string html)
+        private void addInDB(int index,string url, string html)
         {
 
         }
