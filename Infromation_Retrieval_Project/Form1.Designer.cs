@@ -52,6 +52,7 @@
             // listBox1
             // 
             this.listBox1.FormattingEnabled = true;
+            this.listBox1.HorizontalScrollbar = true;
             this.listBox1.Location = new System.Drawing.Point(19, 169);
             this.listBox1.Name = "listBox1";
             this.listBox1.Size = new System.Drawing.Size(383, 251);
@@ -90,6 +91,7 @@
             // listBox2
             // 
             this.listBox2.FormattingEnabled = true;
+            this.listBox2.HorizontalScrollbar = true;
             this.listBox2.Location = new System.Drawing.Point(408, 169);
             this.listBox2.Name = "listBox2";
             this.listBox2.Size = new System.Drawing.Size(383, 251);

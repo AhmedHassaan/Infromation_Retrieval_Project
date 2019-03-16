@@ -11,16 +11,17 @@ using System.Net;
 using System.IO;
 using mshtml;
 using System.Threading;
-using Oracle.DataAccess.Client;
-using Oracle.DataAccess.Types;
+using System.Data.SqlClient;
+using System.Diagnostics;
+using System.Collections.Concurrent;
 
 namespace Infromation_Retrieval_Project
 {
     public partial class Form1 : Form
     {
-        List<string> allLinks;
-        List<string> visitedLinks;
-        List<string> unvisitedLinks;
+        ConcurrentBag<string> allLinks;
+        ConcurrentBag<string> visitedLinks;
+        ConcurrentBag<string> unvisitedLinks;
         WebRequest myWebRequest;
         WebResponse myWebResponse;
         Stream streamResponse;
@@ -29,7 +30,14 @@ namespace Infromation_Retrieval_Project
         int seconds = 0;
         int minute = 0;
         int hours = 0;
+
+        int count = 0;
+
+        CancellationTokenSource cts = new CancellationTokenSource();
+
         Thread mainThread;
+        string[] blacklistLinks = { "fb,", "facebook", "twitter", ".jpg", ".png", ".jpeg","instagram","rss","Rss"};
+        string baseurl = "http://www.egypttoday.com";
         public Form1()
         {
             InitializeComponent();
@@ -43,15 +51,16 @@ namespace Infromation_Retrieval_Project
         private void button1_Click(object sender, EventArgs e)
         {
             stopBtn.Visible = true;
-            allLinks = new List<string>();
-            visitedLinks = new List<string>();
-            unvisitedLinks = new List<string>();
+            allLinks = new ConcurrentBag<string>();
+            visitedLinks = new ConcurrentBag<string>();
+            unvisitedLinks = new ConcurrentBag<string>();
             string urll = "http://www.egypttoday.com";
             //allLinks.Add(urll);
             //unvisitedLinks.Add(urll);
             //urll = "http://www.cnn.com";
             allLinks.Add(urll);
             unvisitedLinks.Add(urll);
+            
             mainThread = new Thread(threadF);
             mainThread.Start();
             timer1 = new System.Windows.Forms.Timer();
@@ -79,12 +88,11 @@ namespace Infromation_Retrieval_Project
         void threadF()
         {
 
-            int count = 0;
             while (unvisitedLinks.Count > 0)
             {
                 count++;
-                String URL = unvisitedLinks[0];
-                unvisitedLinks.RemoveAt(0);
+                String URL;
+                unvisitedLinks.TryTake(out URL);
                 try
                 {
                     // Create a new 'WebRequest' object to the mentioned URL.
@@ -102,20 +110,39 @@ namespace Infromation_Retrieval_Project
                     foreach (IHTMLElement el in elements)
                     {
                         string temp = (string)el.getAttribute("href", 0);
-                        if (temp.StartsWith("http") || temp.StartsWith("/"))
+                        Boolean breakLink = false;
+                        foreach (string item in blacklistLinks)
+                        {
+                            if (temp.Contains(item))
+                            {
+                                breakLink = true;
+                                break;
+                            }
+                        }
+                        if (breakLink)
+                        {
+                            breakLink = false;
+                            continue;
+                        }
+                        if (temp.StartsWith("http") || temp.StartsWith("/") || temp.StartsWith("https")||temp.StartsWith("about:"))
                         {
                             if (temp.StartsWith("/"))
                                 temp = URL + temp;
+                            else if (temp.StartsWith("about:")) {
+                                Trace.WriteLine(temp);
+                                temp=temp.Replace("about:", baseurl);
+                            }
                             if (!allLinks.Contains(temp))
                             {
                                 allLinks.Add(temp);
                                 unvisitedLinks.Add(temp);
                             }
                         }
+                    
 
                     }
                     visitedLinks.Add(URL);
-                    addInDB(count, URL, rString);
+                    addInDB(count, URL, doc.body.innerText);
                 }
                 catch
                 {
@@ -124,9 +151,9 @@ namespace Infromation_Retrieval_Project
                 visitedSize.Text = count.ToString();
                 allSize.Text = allLinks.Count.ToString();
                 listBox2.DataSource = null;
-                listBox2.DataSource = visitedLinks;
+                listBox2.DataSource = visitedLinks.ToList();
                 listBox1.DataSource = null;
-                listBox1.DataSource = allLinks;
+                listBox1.DataSource = allLinks.ToList();
                 if (count == 3000)
                     break;
             }
@@ -149,11 +176,50 @@ namespace Infromation_Retrieval_Project
 
         private void addInDB(int index,string url, string html)
         {
+            try
+            {
+                //This is my connection string i have assigned the database file address path  
+                string MyConnection2 = "Data Source=DESKTOP-4M6RSUD;Initial Catalog=ir;Integrated Security=True";
+                //This is my insert query in which i am taking input from the user through windows forms  
+                using (SqlConnection cnn = new SqlConnection(MyConnection2))
+                {
+                    string sql = "INSERT INTO main2 (url2,[content]) VALUES(@url2,@content)";
+                    cnn.Open();
+                    using (SqlCommand cmd = new SqlCommand(sql, cnn))
+                    {
+                        cmd.Parameters.AddWithValue("@url2",url);
 
+                        cmd.Parameters.AddWithValue("@content",html);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
         private void clearDB()
         {
-
+            try
+            {
+                //This is my connection string i have assigned the database file address path  
+                string MyConnection2 = "Data Source=DESKTOP-4M6RSUD;Initial Catalog=ir;Integrated Security=True";
+                //This is my insert query in which i am taking input from the user through windows forms  
+                using (SqlConnection cnn = new SqlConnection(MyConnection2))
+                {
+                    string sql = "delete from main2 where 1=1";
+                    cnn.Open();
+                    using (SqlCommand cmd = new SqlCommand(sql, cnn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
     }
