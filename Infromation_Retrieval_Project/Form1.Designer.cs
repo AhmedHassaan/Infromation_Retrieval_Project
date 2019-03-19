@@ -37,6 +37,7 @@
             this.stopBtn = new System.Windows.Forms.Button();
             this.allSize = new System.Windows.Forms.Label();
             this.visitedSize = new System.Windows.Forms.Label();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.SuspendLayout();
             // 
             // startBtn
@@ -52,6 +53,7 @@
             // listBox1
             // 
             this.listBox1.FormattingEnabled = true;
+            this.listBox1.HorizontalScrollbar = true;
             this.listBox1.Location = new System.Drawing.Point(19, 169);
             this.listBox1.Name = "listBox1";
             this.listBox1.Size = new System.Drawing.Size(383, 251);
@@ -90,6 +92,7 @@
             // listBox2
             // 
             this.listBox2.FormattingEnabled = true;
+            this.listBox2.HorizontalScrollbar = true;
             this.listBox2.Location = new System.Drawing.Point(408, 169);
             this.listBox2.Name = "listBox2";
             this.listBox2.Size = new System.Drawing.Size(383, 251);
@@ -125,6 +128,11 @@
             this.visitedSize.TabIndex = 9;
             this.visitedSize.Text = "Visisted";
             // 
+            // backgroundWorker1
+            // 
+            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+            this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.done);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -158,6 +166,7 @@
         private System.Windows.Forms.Button stopBtn;
         private System.Windows.Forms.Label allSize;
         private System.Windows.Forms.Label visitedSize;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
     }
 }
 
