@@ -24,7 +24,7 @@ namespace Infromation_Retrieval_Project
         ConcurrentBag<string> unvisitedLinks;
         private delegate void SafeCallDelegate(List<string> all, string countall, List<string> unvisited, string countUnVisited);
 
-        WebRequest myWebRequest;
+       WebRequest myWebRequest;
         WebResponse myWebResponse;
         Stream streamResponse;
         StreamReader sReader;
@@ -40,7 +40,8 @@ namespace Infromation_Retrieval_Project
         Thread mainThread;
 
         Thread mainThread2;
-        string[] blacklistLinks = { "fb,", "facebook", "twitter", ".jpg", ".png", ".jpeg","instagram","rss","Rss"};
+
+         string[] blacklistLinks = { "fb,", "facebook", "twitter", ".jpg", ".png", ".jpeg","instagram","rss","Rss"};
         string baseurl = "http://www.egypttoday.com";
         public Form1()
         {
@@ -100,8 +101,6 @@ namespace Infromation_Retrieval_Project
 
         void threadF(String URL)
         {
-
-
                 try
                 {
                     // Create a new 'WebRequest' object to the mentioned URL.
@@ -143,13 +142,14 @@ namespace Infromation_Retrieval_Project
                             {
                                 Trace.WriteLine(temp);
                                 temp = temp.Replace("about:", baseurl);
-                            }
+                          }
                             if (!allLinks.Contains(temp))
                             {
                                 allLinks.Add(temp);
                                 unvisitedLinks.Add(temp);
                             }
                         }
+                    
 
 
                     }
@@ -229,6 +229,7 @@ Integrated Security=True;User Instance=false;";
                         cmd.Parameters.AddWithValue("@index2", index);
 
                         cmd.Parameters.AddWithValue("@url2",url);
+
                         cmd.Parameters.AddWithValue("@content",html);
                         cmd.ExecuteNonQuery();
                     }
@@ -244,9 +245,8 @@ Integrated Security=True;User Instance=false;";
             try
             {
                 //This is my connection string i have assigned the database file address path  
-                string MyConnection2 = @"Data Source=(LocalDB)\MSSQLLocalDB;
-AttachDbFilename=|DataDirectory|\IR.mdf;
-Integrated Security=True;User Instance=false;";
+
+                string MyConnection2 = "Data Source=DESKTOP-4M6RSUD;Initial Catalog=ir;Integrated Security=True";
                 //This is my insert query in which i am taking input from the user through windows forms  
                 using (SqlConnection cnn = new SqlConnection(MyConnection2))
                 {
@@ -267,7 +267,6 @@ Integrated Security=True;User Instance=false;";
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
             
-        }
 
         private void done(object sender, RunWorkerCompletedEventArgs e)
         {
