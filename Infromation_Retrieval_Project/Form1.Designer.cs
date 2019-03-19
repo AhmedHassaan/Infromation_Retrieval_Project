@@ -38,6 +38,9 @@
             this.allSize = new System.Windows.Forms.Label();
             this.visitedSize = new System.Windows.Forms.Label();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.Save = new System.Windows.Forms.Button();
+            this.restore = new System.Windows.Forms.Button();
+            this.clear = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // startBtn
@@ -128,14 +131,44 @@
             this.visitedSize.TabIndex = 9;
             this.visitedSize.Text = "Visisted";
             // 
-            // backgroundWorker1
+            // Save
             // 
+            this.Save.Location = new System.Drawing.Point(682, 13);
+            this.Save.Name = "Save";
+            this.Save.Size = new System.Drawing.Size(75, 23);
+            this.Save.TabIndex = 10;
+            this.Save.Text = "Save";
+            this.Save.UseVisualStyleBackColor = true;
+            this.Save.Click += new System.EventHandler(this.Save_Click);
+            // 
+            // restore
+            // 
+            this.restore.Location = new System.Drawing.Point(682, 43);
+            this.restore.Name = "restore";
+            this.restore.Size = new System.Drawing.Size(75, 23);
+            this.restore.TabIndex = 11;
+            this.restore.Text = "Restore";
+            this.restore.UseVisualStyleBackColor = true;
+            this.restore.Click += new System.EventHandler(this.restore_Click);
+            // 
+            // clear
+            // 
+            this.clear.Location = new System.Drawing.Point(682, 72);
+            this.clear.Name = "clear";
+            this.clear.Size = new System.Drawing.Size(75, 23);
+            this.clear.TabIndex = 12;
+            this.clear.Text = "Clear";
+            this.clear.UseVisualStyleBackColor = true;
+            this.clear.Click += new System.EventHandler(this.clear_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(794, 462);
+            this.Controls.Add(this.clear);
+            this.Controls.Add(this.restore);
+            this.Controls.Add(this.Save);
             this.Controls.Add(this.visitedSize);
             this.Controls.Add(this.allSize);
             this.Controls.Add(this.stopBtn);
@@ -165,6 +198,9 @@
         private System.Windows.Forms.Label allSize;
         private System.Windows.Forms.Label visitedSize;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private System.Windows.Forms.Button Save;
+        private System.Windows.Forms.Button restore;
+        private System.Windows.Forms.Button clear;
     }
 }
 

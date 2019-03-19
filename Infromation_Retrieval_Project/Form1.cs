@@ -51,16 +51,17 @@ namespace Infromation_Retrieval_Project
         private void Form1_Load(object sender, EventArgs e)
         {
             stopBtn.Visible = false;
-            clearDB();
-            ThreadPool.SetMaxThreads(5, 5);
+            Save.Visible = false;
+           
+            allLinks = new ConcurrentBag<string>();
+            visitedLinks = new ConcurrentBag<string>();
+            unvisitedLinks = new ConcurrentBag<string>();
+
 
         }
         private void button1_Click(object sender, EventArgs e)
         {
             stopBtn.Visible = true;
-            allLinks = new ConcurrentBag<string>();
-            visitedLinks = new ConcurrentBag<string>();
-            unvisitedLinks = new ConcurrentBag<string>();
             string urll = "http://www.egypttoday.com";
             //allLinks.Add(urll);
             //unvisitedLinks.Add(urll);
@@ -76,6 +77,7 @@ namespace Infromation_Retrieval_Project
             timer1.Tick += new EventHandler(timer1_Tick);
             timer1.Interval = 1000; // 1 second
             timer1.Start();
+            
             backgroundWorker1.RunWorkerAsync();
 
 
@@ -213,6 +215,8 @@ namespace Infromation_Retrieval_Project
             mainThread.Abort();
             mainThread2.Abort();
             MessageBox.Show("Done");
+            Save.Visible = true;
+
         }
 
         private void addInDB(int index, string url, string html)
@@ -266,21 +270,54 @@ namespace Infromation_Retrieval_Project
             }
         }
 
-        private void WriteTextSafe(List<string> all, string countall, List<string> unvisited, string countUnVisited)
+        private void WriteTextSafe(List<string> all, string countall, List<string> visited, string countVisited)
         {
             if (visitedSize.InvokeRequired && allSize.InvokeRequired && listBox1.InvokeRequired && listBox2.InvokeRequired)
             {
                 var d = new SafeCallDelegate(WriteTextSafe);
-                Invoke(d, new object[] { all, countall, unvisited, countUnVisited });
+                Invoke(d, new object[] { all, countall, visited, countVisited });
             }
             else
             {
                 visitedSize.Text = visitedLinks.Count.ToString();
-                allSize.Text = allLinks.Count.ToString();
+                allSize.Text = all.Count.ToString();
                 listBox2.DataSource = visitedLinks.ToList();
-                listBox1.DataSource = allLinks.ToList();
+                listBox1.DataSource = all;
 
             }
+        }
+
+        private void Save_Click(object sender, EventArgs e)
+        {
+            SaveUtil.save(allLinks, visitedLinks, unvisitedLinks,seconds,minute,hours);
+        }
+
+        private void restore_Click(object sender, EventArgs e)
+        {
+
+            DataviewModel model = SaveUtil.GetDataviewModel();
+            if (model != null)
+            {
+
+
+                allLinks = model.allLinks2;
+                visitedLinks = model.visitedLinks2;
+                unvisitedLinks = model.unvisitedLinks2;
+                seconds = model.second2;
+                minute = model.min2;
+                hours = model.hour2;
+                label1.Text = hours + ":" + minute + ":" + seconds;
+
+                WriteTextSafe(allLinks.ToList(), allLinks.Count.ToString(), visitedLinks.ToList(), visitedLinks.Count.ToString());
+            }
+            else
+                MessageBox.Show("No Saved Data");
+        }
+
+        private void clear_Click(object sender, EventArgs e)
+        {
+            clearDB();
+
         }
     }
 }
