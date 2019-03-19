@@ -246,7 +246,9 @@ Integrated Security=True;User Instance=false;";
             {
                 //This is my connection string i have assigned the database file address path  
 
-                string MyConnection2 = "Data Source=DESKTOP-4M6RSUD;Initial Catalog=ir;Integrated Security=True";
+                string MyConnection2 = @"Data Source=(LocalDB)\MSSQLLocalDB;
+AttachDbFilename=|DataDirectory|\IR.mdf;
+Integrated Security=True;User Instance=false;";
                 //This is my insert query in which i am taking input from the user through windows forms  
                 using (SqlConnection cnn = new SqlConnection(MyConnection2))
                 {
@@ -264,14 +266,6 @@ Integrated Security=True;User Instance=false;";
             }
         }
 
-        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
-        {
-            
-
-        private void done(object sender, RunWorkerCompletedEventArgs e)
-        {
-
-        }
         private void WriteTextSafe(List<string> all, string countall, List<string> unvisited, string countUnVisited)
         {
             if (visitedSize.InvokeRequired&& allSize.InvokeRequired&&listBox1.InvokeRequired&&listBox2.InvokeRequired)
