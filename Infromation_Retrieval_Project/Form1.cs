@@ -1,19 +1,14 @@
-﻿using System;
+﻿using mshtml;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Net;
-using System.IO;
-using mshtml;
-using System.Threading;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Collections.Concurrent;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace Infromation_Retrieval_Project
 {
@@ -22,9 +17,13 @@ namespace Infromation_Retrieval_Project
         ConcurrentBag<string> allLinks;
         ConcurrentBag<string> visitedLinks;
         ConcurrentBag<string> unvisitedLinks;
+        string MyConnection2 = @"Data Source=(LocalDB)\MSSQLLocalDB;
+                AttachDbFilename=|DataDirectory|\IR.mdf;
+                Integrated Security=True;User Instance=false;";
+
         private delegate void SafeCallDelegate(List<string> all, string countall, List<string> unvisited, string countUnVisited);
 
-       WebRequest myWebRequest;
+        WebRequest myWebRequest;
         WebResponse myWebResponse;
         Stream streamResponse;
         StreamReader sReader;
@@ -34,15 +33,16 @@ namespace Infromation_Retrieval_Project
         int hours = 0;
 
         int count = 0;
-        
+
         CancellationTokenSource cts = new CancellationTokenSource();
 
         Thread mainThread;
 
         Thread mainThread2;
 
-         string[] blacklistLinks = { "fb,", "facebook", "twitter", ".jpg", ".png", ".jpeg","instagram","rss","Rss"};
+        string[] blacklistLinks = { "fb,", "facebook", "twitter", ".jpg", ".png", ".jpeg", "instagram", "rss", "Rss" };
         string baseurl = "http://www.egypttoday.com";
+
         public Form1()
         {
             InitializeComponent();
@@ -101,18 +101,18 @@ namespace Infromation_Retrieval_Project
 
         void threadF(String URL)
         {
-                try
-                {
-                    // Create a new 'WebRequest' object to the mentioned URL.
-                    myWebRequest = WebRequest.Create(URL);
-                    // The response object of 'WebRequest' is assigned to a WebResponse' variable.
-                    myWebResponse = myWebRequest.GetResponse();
-                    streamResponse = myWebResponse.GetResponseStream();
-                    sReader = new StreamReader(streamResponse);
-                    string rString = sReader.ReadToEnd();
-                    HTMLDocument y = new HTMLDocument();
-                    IHTMLDocument2 doc = (IHTMLDocument2)y;
-                    doc.write(rString);
+            try
+            {
+                // Create a new 'WebRequest' object to the mentioned URL.
+                myWebRequest = WebRequest.Create(URL);
+                // The response object of 'WebRequest' is assigned to a WebResponse' variable.
+                myWebResponse = myWebRequest.GetResponse();
+                streamResponse = myWebResponse.GetResponseStream();
+                sReader = new StreamReader(streamResponse);
+                string rString = sReader.ReadToEnd();
+                HTMLDocument y = new HTMLDocument();
+                IHTMLDocument2 doc = (IHTMLDocument2)y;
+                doc.write(rString);
                 //MessageBox.Show(doc.links.toString());
                 if (allLinks.Count <= 3000)
                 {
@@ -137,30 +137,32 @@ namespace Infromation_Retrieval_Project
                         if (temp.StartsWith("http") || temp.StartsWith("/") || temp.StartsWith("https") || temp.StartsWith("about:"))
                         {
                             if (temp.StartsWith("/"))
+                            {
                                 temp = URL + temp;
+                            }
                             else if (temp.StartsWith("about:"))
                             {
                                 Trace.WriteLine(temp);
                                 temp = temp.Replace("about:", baseurl);
-                          }
+                            }
                             if (!allLinks.Contains(temp))
                             {
                                 allLinks.Add(temp);
                                 unvisitedLinks.Add(temp);
                             }
                         }
-                    
+
 
 
                     }
                 }
-                    visitedLinks.Add(URL);
-                    addInDB(count, URL, doc.body.innerText);
-                }
-                catch
-                {
-                    //count--;
-                }
+                visitedLinks.Add(URL);
+                addInDB(count, URL, doc.body.innerText);
+            }
+            catch
+            {
+                //count--;
+            }
             //visitedSize.Text = visitedLinks.Count.ToString();
             //allSize.Text = allLinks.Count.ToString();
             ////listBox2.DataSource = null;
@@ -169,32 +171,36 @@ namespace Infromation_Retrieval_Project
             //listBox1.DataSource = allLinks.ToList();
             ////        break;
             WriteTextSafe(allLinks.ToList(), allLinks.Count.ToString(), visitedLinks.ToList(), visitedLinks.Count.ToString());
-            
 
-                //streamResponse.Close();
-                //sReader.Close();
-                //myWebResponse.Close();
-                //MessageBox.Show("Done");
-                //timer1.Stop();
+
+            //streamResponse.Close();
+            //sReader.Close();
+            //myWebResponse.Close();
+            //MessageBox.Show("Done");
+            //timer1.Stop();
         }
         void threadWrapper()
         {
             while (true)
             {
                 if (visitedLinks.Count > 3000)
+                {
                     break;
+                }
+
                 if (unvisitedLinks.Count > 0)
                 {
                     string url;
                     unvisitedLinks.TryTake(out url);
                     threadF(url);
                 }
-            
-            else
-            break;
 
-        }
-            
+                else
+                {
+                    break;
+                }
+            }
+
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -209,16 +215,13 @@ namespace Infromation_Retrieval_Project
             MessageBox.Show("Done");
         }
 
-        private void addInDB(int index,string url, string html)
+        private void addInDB(int index, string url, string html)
         {
             try
             {
                 //This is my connection string i have assigned the database file address path  
                 //    string MyConnection2 = "Data Source=DESKTOP-4M6RSUD;Initial Catalog=ir;Integrated Security=True";
-                string MyConnection2 = @"Data Source=(LocalDB)\MSSQLLocalDB;
-AttachDbFilename=|DataDirectory|\IR.mdf;
-Integrated Security=True;User Instance=false;";
-
+                
                 //This is my insert query in which i am taking input from the user through windows forms  
                 using (SqlConnection cnn = new SqlConnection(MyConnection2))
                 {
@@ -228,9 +231,9 @@ Integrated Security=True;User Instance=false;";
                     {
                         cmd.Parameters.AddWithValue("@index2", index);
 
-                        cmd.Parameters.AddWithValue("@url2",url);
+                        cmd.Parameters.AddWithValue("@url2", url);
 
-                        cmd.Parameters.AddWithValue("@content",html);
+                        cmd.Parameters.AddWithValue("@content", html);
                         cmd.ExecuteNonQuery();
                     }
                 }
@@ -246,9 +249,6 @@ Integrated Security=True;User Instance=false;";
             {
                 //This is my connection string i have assigned the database file address path  
 
-                string MyConnection2 = @"Data Source=(LocalDB)\MSSQLLocalDB;
-AttachDbFilename=|DataDirectory|\IR.mdf;
-Integrated Security=True;User Instance=false;";
                 //This is my insert query in which i am taking input from the user through windows forms  
                 using (SqlConnection cnn = new SqlConnection(MyConnection2))
                 {
@@ -268,10 +268,10 @@ Integrated Security=True;User Instance=false;";
 
         private void WriteTextSafe(List<string> all, string countall, List<string> unvisited, string countUnVisited)
         {
-            if (visitedSize.InvokeRequired&& allSize.InvokeRequired&&listBox1.InvokeRequired&&listBox2.InvokeRequired)
+            if (visitedSize.InvokeRequired && allSize.InvokeRequired && listBox1.InvokeRequired && listBox2.InvokeRequired)
             {
                 var d = new SafeCallDelegate(WriteTextSafe);
-                Invoke(d, new object[] { all,countall,unvisited,countUnVisited});
+                Invoke(d, new object[] { all, countall, unvisited, countUnVisited });
             }
             else
             {
