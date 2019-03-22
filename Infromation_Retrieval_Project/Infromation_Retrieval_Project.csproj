@@ -76,6 +76,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>IRDataSet.xsd</DependentUpon>
     </Compile>
+    <Compile Include="Logger.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SaveUtil.cs" />

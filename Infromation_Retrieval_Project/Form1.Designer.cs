@@ -37,7 +37,6 @@
             this.stopBtn = new System.Windows.Forms.Button();
             this.allSize = new System.Windows.Forms.Label();
             this.visitedSize = new System.Windows.Forms.Label();
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.Save = new System.Windows.Forms.Button();
             this.restore = new System.Windows.Forms.Button();
             this.clear = new System.Windows.Forms.Button();
@@ -197,7 +196,6 @@
         private System.Windows.Forms.Button stopBtn;
         private System.Windows.Forms.Label allSize;
         private System.Windows.Forms.Label visitedSize;
-        private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.Windows.Forms.Button Save;
         private System.Windows.Forms.Button restore;
         private System.Windows.Forms.Button clear;

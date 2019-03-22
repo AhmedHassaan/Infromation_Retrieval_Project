@@ -23,7 +23,7 @@ namespace Infromation_Retrieval_Project
 
         private delegate void SafeCallDelegate(List<string> all, string countall, List<string> unvisited, string countUnVisited);
 
-        WebRequest myWebRequest;
+        HttpWebRequest myWebRequest;
         WebResponse myWebResponse;
         Stream streamResponse;
         StreamReader sReader;
@@ -41,7 +41,7 @@ namespace Infromation_Retrieval_Project
         Thread mainThread2;
 
         string[] blacklistLinks = { "fb,", "facebook", "twitter", ".jpg", ".png", ".jpeg", "instagram", "rss", "Rss" };
-        string baseurl = "http://www.egypttoday.com";
+        string baseurl = "https://edition.cnn.com";
 
         public Form1()
         {
@@ -62,7 +62,7 @@ namespace Infromation_Retrieval_Project
         private void button1_Click(object sender, EventArgs e)
         {
             stopBtn.Visible = true;
-            string urll = "http://www.egypttoday.com";
+            string urll = baseurl;
             //allLinks.Add(urll);
             //unvisitedLinks.Add(urll);
             //urll = "http://www.cnn.com";
@@ -78,7 +78,6 @@ namespace Infromation_Retrieval_Project
             timer1.Interval = 1000; // 1 second
             timer1.Start();
             
-            backgroundWorker1.RunWorkerAsync();
 
 
 
@@ -106,7 +105,12 @@ namespace Infromation_Retrieval_Project
             try
             {
                 // Create a new 'WebRequest' object to the mentioned URL.
-                myWebRequest = WebRequest.Create(URL);
+                myWebRequest = (HttpWebRequest)WebRequest.Create(URL);
+                myWebRequest.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2";
+                myWebRequest.CookieContainer.Add(new Cookie("countryCode", "EG"));
+                myWebRequest.CookieContainer.Add(new Cookie("Domain", "cnn.com"));
+             //   myWebRequest.CookieContainer.Add(new Cookie("geoData", "cairo|C|11511|EG|AF|200|xdsl"));
+
                 // The response object of 'WebRequest' is assigned to a WebResponse' variable.
                 myWebResponse = myWebRequest.GetResponse();
                 streamResponse = myWebResponse.GetResponseStream();
@@ -115,6 +119,7 @@ namespace Infromation_Retrieval_Project
                 HTMLDocument y = new HTMLDocument();
                 IHTMLDocument2 doc = (IHTMLDocument2)y;
                 doc.write(rString);
+                Logger.Log(rString);
                 //MessageBox.Show(doc.links.toString());
                 if (allLinks.Count <= 3000)
                 {
@@ -159,11 +164,15 @@ namespace Infromation_Retrieval_Project
                     }
                 }
                 visitedLinks.Add(URL);
-                addInDB(count, URL, doc.body.innerText);
+             //   MessageBox.Show(doc.body.innerText);
+              //  addInDB(count, URL, doc.body.innerText);
             }
-            catch
+            catch(Exception e)
             {
                 //count--;
+                Logger.Log(e);
+                MessageBox.Show(e.Message);
+
             }
             //visitedSize.Text = visitedLinks.Count.ToString();
             //allSize.Text = allLinks.Count.ToString();
@@ -194,7 +203,13 @@ namespace Infromation_Retrieval_Project
                 {
                     string url;
                     unvisitedLinks.TryTake(out url);
-                    threadF(url);
+                    if (url != null)
+                    {
+
+
+                        threadF(url);
+                    }
+
                 }
 
                 else
