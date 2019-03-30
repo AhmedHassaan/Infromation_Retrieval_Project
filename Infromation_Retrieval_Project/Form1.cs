@@ -14,12 +14,11 @@ namespace Infromation_Retrieval_Project
 {
     public partial class Form1 : Form
     {
-        ConcurrentBag<string> allLinks;
-        ConcurrentBag<string> visitedLinks;
-        ConcurrentBag<string> unvisitedLinks;
-        string MyConnection2 = @"Data Source=(LocalDB)\MSSQLLocalDB;
-                AttachDbFilename=|DataDirectory|\IR.mdf;
-                Integrated Security=True;User Instance=false;";
+        ConcurrentHashSet<string> allLinks;
+        ConcurrentQueue<string> links;
+        ConcurrentQueue<KeyValuePair<string, IHTMLDocument2>> docs2;
+
+        string MyConnection2 = @"Data Source=DESKTOP-4M6RSUD;Initial Catalog=ir;Integrated Security=True";
 
         private delegate void SafeCallDelegate(List<string> all, string countall, List<string> unvisited, string countUnVisited);
 
@@ -33,18 +32,26 @@ namespace Infromation_Retrieval_Project
         int hours = 0;
 
         int count = 0;
+        int unvisited = 0;
+
+       int visited= 0;
 
         CancellationTokenSource cts = new CancellationTokenSource();
 
         Thread mainThread;
 
         Thread mainThread2;
+        Thread mainThread3;
+        Thread mainThread4;
+        Thread mainThread5;
 
-        string[] blacklistLinks = { "fb,", "facebook", "twitter", ".jpg", ".png", ".jpeg", "instagram", "rss", "Rss" };
-        string baseurl = "https://edition.cnn.com";
+        string[] blacklistLinks = { "fb,", "facebook", "twitter", ".jpg", ".png", ".jpeg", "instagram", "rss", "Rss","youtube","mediawiki"};
+        string baseurl = "https://en.wikipedia.org/wiki/Main_Page";
 
         public Form1()
         {
+            ServicePointManager.Expect100Continue = true;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             InitializeComponent();
         }
 
@@ -52,10 +59,10 @@ namespace Infromation_Retrieval_Project
         {
             stopBtn.Visible = false;
             Save.Visible = false;
-           
-            allLinks = new ConcurrentBag<string>();
-            visitedLinks = new ConcurrentBag<string>();
-            unvisitedLinks = new ConcurrentBag<string>();
+
+            allLinks = new ConcurrentHashSet<string>();
+           links = new ConcurrentQueue<string>();
+            docs2 = new ConcurrentQueue<KeyValuePair<string, IHTMLDocument2>>();
 
 
         }
@@ -65,19 +72,27 @@ namespace Infromation_Retrieval_Project
             string urll = baseurl;
             //allLinks.Add(urll);
             //unvisitedLinks.Add(urll);
-            //urll = "http://www.cnn.com";
             allLinks.Add(urll);
-            unvisitedLinks.Add(urll);
-            mainThread = new Thread(threadWrapper);
-            mainThread.Start();
+            links.Enqueue(urll);
+            Logger.clear();
             mainThread2 = new Thread(threadWrapper);
             mainThread2.Start();
+            mainThread3 = new Thread(threadWrapper);
+            mainThread3.Start();
+            mainThread = new Thread(threadWrapper2);
+            mainThread.Start();
+            mainThread4 = new Thread(threadWrapper);
+            mainThread4.Start();
+            mainThread5 = new Thread(threadWrapper);
+            mainThread5.Start();
+            
+
 
             timer1 = new System.Windows.Forms.Timer();
             timer1.Tick += new EventHandler(timer1_Tick);
             timer1.Interval = 1000; // 1 second
             timer1.Start();
-            
+
 
 
 
@@ -105,116 +120,118 @@ namespace Infromation_Retrieval_Project
             try
             {
                 // Create a new 'WebRequest' object to the mentioned URL.
-                myWebRequest = (HttpWebRequest)WebRequest.Create(URL);
-                myWebRequest.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2";
-                myWebRequest.CookieContainer.Add(new Cookie("countryCode", "EG"));
-                myWebRequest.CookieContainer.Add(new Cookie("Domain", "cnn.com"));
-             //   myWebRequest.CookieContainer.Add(new Cookie("geoData", "cairo|C|11511|EG|AF|200|xdsl"));
 
-                // The response object of 'WebRequest' is assigned to a WebResponse' variable.
-                myWebResponse = myWebRequest.GetResponse();
-                streamResponse = myWebResponse.GetResponseStream();
-                sReader = new StreamReader(streamResponse);
-                string rString = sReader.ReadToEnd();
-                HTMLDocument y = new HTMLDocument();
-                IHTMLDocument2 doc = (IHTMLDocument2)y;
-                doc.write(rString);
-                Logger.Log(rString);
-                //MessageBox.Show(doc.links.toString());
-                if (allLinks.Count <= 3000)
+                WebRequest request = WebRequest.Create(URL);
+                if (request is HttpWebRequest)
                 {
-                    IHTMLElementCollection elements = doc.links;
-                    foreach (IHTMLElement el in elements)
+
+                    myWebRequest = (HttpWebRequest)request;
+                    myWebRequest.AllowAutoRedirect = true;
+                    myWebResponse = myWebRequest.GetResponse();
+                    streamResponse = myWebResponse.GetResponseStream();
+                    sReader = new StreamReader(streamResponse);
+
+                    string rString = sReader.ReadToEnd();
+
+                    string[] splits2 = { "lang=" };
+                    string[] metas = rString.Split(splits2, StringSplitOptions.None);
+                    if (metas.Length == 1 || metas[1].Substring(1, 2) == "en")
                     {
-                        string temp = (string)el.getAttribute("href", 0);
-                        Boolean breakLink = false;
-                        foreach (string item in blacklistLinks)
+
+                        IHTMLDocument2 doc = (IHTMLDocument2)new HTMLDocument();
+                        doc.write(rString);
+
+                        //   MessageBox.Show(doc.body.innerText);
+                        if (doc.body.innerText != null&& doc.body.innerText.Trim().Length>50)
                         {
-                            if (temp.Contains(item))
-                            {
-                                breakLink = true;
-                                break;
-                            }
-                        }
-                        if (breakLink)
-                        {
-                            breakLink = false;
-                            continue;
-                        }
-                        if (temp.StartsWith("http") || temp.StartsWith("/") || temp.StartsWith("https") || temp.StartsWith("about:"))
-                        {
-                            if (temp.StartsWith("/"))
-                            {
-                                temp = URL + temp;
-                            }
-                            else if (temp.StartsWith("about:"))
-                            {
-                                Trace.WriteLine(temp);
-                                temp = temp.Replace("about:", baseurl);
-                            }
-                            if (!allLinks.Contains(temp))
-                            {
-                                allLinks.Add(temp);
-                                unvisitedLinks.Add(temp);
-                            }
-                        }
+                            addInDB(count, URL, doc.body.innerText.Trim());
+                            visited++;
+                            unvisited--;
 
 
+                        }
+                        if (docs2.Count<50)
+                        {
+                            docs2.Enqueue(new KeyValuePair<string, IHTMLDocument2>(URL, doc));
+
+                        }
 
                     }
                 }
-                visitedLinks.Add(URL);
-             //   MessageBox.Show(doc.body.innerText);
-              //  addInDB(count, URL, doc.body.innerText);
+                
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                //count--;
-                Logger.Log(e);
-                MessageBox.Show(e.Message);
-
+                Logger.Log(URL, e);
+        
             }
-            //visitedSize.Text = visitedLinks.Count.ToString();
-            //allSize.Text = allLinks.Count.ToString();
-            ////listBox2.DataSource = null;
-            //listBox2.DataSource = visitedLinks.ToList();
-            //listBox1.DataSource = null;
-            //listBox1.DataSource = allLinks.ToList();
-            ////        break;
-            WriteTextSafe(allLinks.ToList(), allLinks.Count.ToString(), visitedLinks.ToList(), visitedLinks.Count.ToString());
+            WriteTextSafe(null,links.Count.ToString(), null, Convert.ToString(visited));
 
 
             //streamResponse.Close();
             //sReader.Close();
             //myWebResponse.Close();
-            //MessageBox.Show("Done");
-            //timer1.Stop();
+          
+
         }
         void threadWrapper()
         {
             while (true)
             {
-                if (visitedLinks.Count > 3000)
+                if (visited > 3200)
                 {
                     break;
                 }
 
-                if (unvisitedLinks.Count > 0)
+                if (links.Count > 0)
                 {
                     string url;
-                    unvisitedLinks.TryTake(out url);
+                    links.TryDequeue(out url);
                     if (url != null)
                     {
 
 
-                        threadF(url);
+                       threadF(url);
                     }
 
                 }
 
                 else
                 {
+                    Thread.Sleep(500);
+                }
+            }
+
+        }
+
+        void threadWrapper2()
+        {
+            while (true)
+            {
+                if (links.Count > 3200)
+                {
                     break;
+                }
+
+                if(links.Count>100)
+                    Thread.Sleep(15000);
+
+
+               else if (docs2.Count > 0)
+                {
+                    KeyValuePair<string, IHTMLDocument2> pair;
+                    bool retuend=docs2.TryDequeue(out pair);
+                    if (retuend)
+                    {
+                        parseDoc(pair.Key, pair.Value);
+
+                    }
+
+                }
+
+                else
+                {
+                    Thread.Sleep(1000);
                 }
             }
 
@@ -229,6 +246,11 @@ namespace Infromation_Retrieval_Project
             timer1.Stop();
             mainThread.Abort();
             mainThread2.Abort();
+            mainThread3.Abort();
+            mainThread4.Abort();
+            mainThread5.Abort();
+
+
             MessageBox.Show("Done");
             Save.Visible = true;
 
@@ -244,12 +266,11 @@ namespace Infromation_Retrieval_Project
                 //This is my insert query in which i am taking input from the user through windows forms  
                 using (SqlConnection cnn = new SqlConnection(MyConnection2))
                 {
-                    string sql = "INSERT INTO main2 (index2,path,[content]) VALUES(@index2,@url2,@content)";
+                    string sql = "INSERT INTO main2 (path,[content]) VALUES(@url2,@content)";
                     cnn.Open();
                     using (SqlCommand cmd = new SqlCommand(sql, cnn))
                     {
-                        cmd.Parameters.AddWithValue("@index2", index);
-
+                 
                         cmd.Parameters.AddWithValue("@url2", url);
 
                         cmd.Parameters.AddWithValue("@content", html);
@@ -294,17 +315,17 @@ namespace Infromation_Retrieval_Project
             }
             else
             {
-                visitedSize.Text = visitedLinks.Count.ToString();
-                allSize.Text = all.Count.ToString();
-                listBox2.DataSource = visitedLinks.ToList();
-                listBox1.DataSource = all;
+                visitedSize.Text = countVisited;
+                allSize.Text = countall;
+              //  listBox2.DataSource = visitedLinks.ToList();
+               // listBox1.DataSource = all;
 
             }
         }
 
         private void Save_Click(object sender, EventArgs e)
         {
-            SaveUtil.save(allLinks, visitedLinks, unvisitedLinks,seconds,minute,hours);
+            //SaveUtil.save(allLinks, visitedLinks, unvisitedLinks,seconds,minute,hours);
         }
 
         private void restore_Click(object sender, EventArgs e)
@@ -315,15 +336,14 @@ namespace Infromation_Retrieval_Project
             {
 
 
-                allLinks = model.allLinks2;
-                visitedLinks = model.visitedLinks2;
-                unvisitedLinks = model.unvisitedLinks2;
-                seconds = model.second2;
-                minute = model.min2;
-                hours = model.hour2;
-                label1.Text = hours + ":" + minute + ":" + seconds;
+                //visitedLinks = model.visitedLinks2;
+                //unvisitedLinks = model.unvisitedLinks2;
+                //seconds = model.second2;
+                //minute = model.min2;
+                //hours = model.hour2;
+                //label1.Text = hours + ":" + minute + ":" + seconds;
 
-                WriteTextSafe(allLinks.ToList(), allLinks.Count.ToString(), visitedLinks.ToList(), visitedLinks.Count.ToString());
+                //WriteTextSafe(null,unvisitedLinks.Count.ToString(), null, visitedLinks.Count.ToString());
             }
             else
                 MessageBox.Show("No Saved Data");
@@ -333,6 +353,107 @@ namespace Infromation_Retrieval_Project
         {
             clearDB();
 
+        }
+
+        private void log_Click(object sender, EventArgs e)
+        {
+            Process.Start(@"log.txt");
+        }
+        private void parseDoc(string URL, IHTMLDocument2 doc)
+        {
+            try
+            {
+                Uri uri = null;
+                IHTMLElementCollection elements = (IHTMLElementCollection)doc.links;
+                if (Uri.IsWellFormedUriString(URL, UriKind.RelativeOrAbsolute))
+                {
+                    uri = new Uri(URL);
+                }
+                foreach (IHTMLElement el in elements)
+                {
+
+                    string temp = (string)el.getAttribute("href", 0);
+                    Boolean breakLink = false;
+                    foreach (string item in blacklistLinks)
+                    {
+                        if (temp.Contains(item))
+                        {
+                            breakLink = true;
+                            break;
+                        }
+                    }
+                    if (breakLink)
+                    {
+                        breakLink = false;
+                        continue;
+                    }
+                    if (temp.StartsWith("http") || temp.StartsWith("/") || temp.StartsWith("https") || temp.StartsWith("about:"))
+                    {
+                        Logger.trace("1abuot---" + temp);
+
+                        if (temp.StartsWith("/"))
+                        {
+
+                            temp = URL + temp;
+
+                        }
+                        else if (temp.Contains("blank#"))
+                        {
+                            temp = temp.Replace("about:blank", URL);
+                        }
+                        else if (temp.StartsWith("about:"))
+                        {
+
+                            if (temp.Contains("www.") || temp.Contains("//m.")||temp.Contains("en."))
+                            {
+                                if (temp.StartsWith("http"))
+                                    temp = temp.Replace("about:", "");
+                                else
+                                    temp = temp.Replace("about:", "https:");
+
+
+                            }
+                            else
+                            {
+                                if (temp[6] == '/')
+                                    temp = temp.Replace("about:", uri.GetLeftPart(System.UriPartial.Authority));
+                                else
+                                    temp = temp.Replace("about:", uri.GetLeftPart(System.UriPartial.Authority) + "/");
+
+
+                            }
+
+
+
+                        }
+                        Logger.trace("2abuot---" + temp);
+
+                        if (!allLinks.Contains(temp))
+                        {
+                            allLinks.Add(temp);
+                            links.Enqueue(temp);
+                            unvisited++;
+
+                        }
+
+
+                    }
+                    else
+                    {
+                        Logger.Log("another-- " + temp);
+                    }
+
+
+                }
+                }
+            catch (Exception)
+            {
+
+
+            }
+
+
+            
         }
     }
 }

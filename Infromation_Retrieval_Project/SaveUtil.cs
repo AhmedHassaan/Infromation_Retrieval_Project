@@ -14,9 +14,9 @@ namespace Infromation_Retrieval_Project
         {
             File.WriteAllText("ir.json", json);
         }
-        public static void save(ConcurrentBag<string> allLinks,
-        ConcurrentBag<string> visitedLinks,
-        ConcurrentBag<string> unvisitedLinks,
+        public static void save(ConcurrentHashSet<string> allLinks,
+        ConcurrentQueue<string> visitedLinks,
+        ConcurrentQueue<string> unvisitedLinks,
         int second,
         int min,
         int hour
@@ -24,7 +24,6 @@ namespace Infromation_Retrieval_Project
         {
             var x = new DataviewModel
             {
-                allLinks2 = allLinks,
                 visitedLinks2 = visitedLinks,
                 unvisitedLinks2 = unvisitedLinks,
                 second2 = second,
@@ -49,9 +48,9 @@ namespace Infromation_Retrieval_Project
 
   public  class DataviewModel
     {
-        public ConcurrentBag<string> allLinks2;
-        public ConcurrentBag<string> visitedLinks2;
-        public ConcurrentBag<string> unvisitedLinks2;
+        public ConcurrentQueue<string> allLinks2;
+        public ConcurrentQueue<string> visitedLinks2;
+        public ConcurrentQueue<string> unvisitedLinks2;
         public int second2;
         public int min2;
         public int hour2;

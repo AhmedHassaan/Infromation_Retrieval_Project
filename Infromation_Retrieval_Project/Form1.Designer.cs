@@ -40,6 +40,7 @@
             this.Save = new System.Windows.Forms.Button();
             this.restore = new System.Windows.Forms.Button();
             this.clear = new System.Windows.Forms.Button();
+            this.log = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // startBtn
@@ -160,11 +161,22 @@
             this.clear.UseVisualStyleBackColor = true;
             this.clear.Click += new System.EventHandler(this.clear_Click);
             // 
+            // log
+            // 
+            this.log.Location = new System.Drawing.Point(707, 128);
+            this.log.Name = "log";
+            this.log.Size = new System.Drawing.Size(75, 23);
+            this.log.TabIndex = 13;
+            this.log.Text = "log";
+            this.log.UseVisualStyleBackColor = true;
+            this.log.Click += new System.EventHandler(this.log_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(794, 462);
+            this.Controls.Add(this.log);
             this.Controls.Add(this.clear);
             this.Controls.Add(this.restore);
             this.Controls.Add(this.Save);
@@ -199,6 +211,7 @@
         private System.Windows.Forms.Button Save;
         private System.Windows.Forms.Button restore;
         private System.Windows.Forms.Button clear;
+        private System.Windows.Forms.Button log;
     }
 }
 
